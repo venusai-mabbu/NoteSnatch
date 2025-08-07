@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "NoteSnatch",
+  "version": "1.0",
+  "description": "Instantly creates notes from selected conten",
+  "permissions": ["scripting", "activeTab"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+
+  },
+  "content_scripts": [],
+  "web_accessible_resources": [
+    {
+      "resources": ["iframe.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
