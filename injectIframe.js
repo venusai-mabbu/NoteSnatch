@@ -51,9 +51,9 @@
   wrapper.style.cssText = `
     position: fixed;
     bottom: 20px;
-    right: 20px;
-    width: 400px;
-    height: 420px;
+    right: 0px;
+    width: 260px;
+    height: 300px;
     background: ${darkMode ? '#1e1e1e' : '#fff'};
     color: ${darkMode ? '#f5f5f5' : '#222'};
     border-radius: 10px;
@@ -71,7 +71,7 @@
   header.style.cssText = `
     background: ${darkMode ? '#333' : '#4a90e2'};
     color: white;
-    padding: 10px;
+    padding: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -81,9 +81,9 @@
   `;
   header.innerHTML = `
     <span>NoteSnatch</span>
-    <div>
-      <button id="minimizeBtn" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">−</button>
-      <button id="closeBtn" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">×</button>
+    <div style="margin-left:5px;">
+      <button id="minimizeBtn" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;padding:0px">−</button>
+      <button id="closeBtn" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;margin:0px;">×</button>
     </div>
   `;
   wrapper.appendChild(header);
@@ -95,7 +95,8 @@
     justify-content: space-between;
     padding: 8px 10px;
     background: ${darkMode ? '#2a2a2a' : '#f7f7f7'};
-    gap: 8px;
+    gap: 2px;
+    min-width: 270px;
   `;
 
   // Custom Dark Mode Toggle
@@ -105,6 +106,7 @@
   const darkText = document.createElement('span');
   darkText.textContent = 'Dark Mode';
   darkText.style.fontSize = '13px';
+  darkText.style.margin = '0px';
 
   const darkToggle = document.createElement('div');
   darkToggle.style.cssText = `
@@ -114,6 +116,7 @@
     border-radius: 10px;
     position: relative;
     cursor: pointer;
+    margin:0px;
   `;
 
   const darkKnob = document.createElement('div');
@@ -134,10 +137,10 @@
 
   // Opacity Control
   const opacityLabel = document.createElement('label');
-  opacityLabel.style.cssText = 'display: flex; align-items: center; gap: 5px;';
+  opacityLabel.style.cssText = 'display: flex; align-items: center; gap: 5px;width:150px';
   opacityLabel.innerHTML = `
     Opacity
-    <input type="range" min="0.3" max="1" step="0.1" value="1" id="opacitySlider">
+    <input type="range" min="0.3" max="1" step="0.1" value="1" id="opacitySlider" style="width:40%">
   `;
 
   controls.appendChild(darkModeContainer);
@@ -359,13 +362,18 @@
       content.style.display = 'none';
       footer.style.display = 'none';
       controls.style.display = 'none';
+     
       wrapper.style.height = 'auto';
+      wrapper.style.width = 'auto';
+
       if (minimizeBtn) minimizeBtn.textContent = '+';
     } else {
       content.style.display = 'block';
       footer.style.display = 'flex';
       controls.style.display = 'flex';
-      wrapper.style.height = '420px';
+      wrapper.style.height = '300px';
+      wrapper.style.width='260px';
+
       if (minimizeBtn) minimizeBtn.textContent = '−';
     }
   }
