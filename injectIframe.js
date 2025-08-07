@@ -52,19 +52,27 @@
     position: fixed;
     bottom: 20px;
     right: 0px;
-    width: 260px;
-    height: 300px;
+    height : 300px;
+    width:260px;
+    min-height: 300px;
+    min-width: 260px;
+     
+   
     background: ${darkMode ? '#1e1e1e' : '#fff'};
     color: ${darkMode ? '#f5f5f5' : '#222'};
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0,0,0,0.2);
-    z-index: 999999;
+    z-index: 99;
     display: flex;
     flex-direction: column;
     font-family: 'Segoe UI', sans-serif;
     transition: opacity 0.3s ease;
     resize: both;
     overflow: hidden;
+     user-select: none;
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* IE/Edge */
   `;
 
   const header = document.createElement('div');
@@ -140,7 +148,7 @@
   opacityLabel.style.cssText = 'display: flex; align-items: center; gap: 5px;width:150px';
   opacityLabel.innerHTML = `
     Opacity
-    <input type="range" min="0.3" max="1" step="0.1" value="1" id="opacitySlider" style="width:40%">
+    <input type="range" min="0.2" max="1" step="0.1" value="1" id="opacitySlider" style="width:40%">
   `;
 
   controls.appendChild(darkModeContainer);
@@ -165,16 +173,18 @@
   footer.style.cssText = `
     display: flex;
     justify-content: space-between;
-    padding: 10px;
+    padding: 5px;
     border-top: 1px solid #ccc;
     background: ${darkMode ? '#333' : '#f0f0f0'};
   `;
   const downloadBtn = document.createElement('button');
   downloadBtn.textContent = '⬇ Download';
-  downloadBtn.style.cssText = 'padding:6px 12px;cursor:pointer;';
+  downloadBtn.style.cssText = 'padding:6px 12px';
+  // downloadBtn.style.cssText = 'cursor:pointer';
   const clearBtn = document.createElement('button');
   clearBtn.textContent = 'Clear';
-  clearBtn.style.cssText = 'padding:6px 12px;cursor:pointer;';
+  clearBtn.style.cssText = 'padding:6px 12px';
+  //  clearBtn.style.cssText = 'cursor:pointer';
   footer.appendChild(downloadBtn);
   footer.appendChild(clearBtn);
   wrapper.appendChild(footer);
@@ -230,59 +240,126 @@
     });
   }
 
+ 
+
+
   function addNote(text) {
-    if (!text || typeof text !== 'string' || !text.trim()) return;
-    
-    const noteText = text.trim();
-    const li = document.createElement('li');
-    li.style.cssText = `
-      background: ${darkMode ? '#333' : '#f9f9f9'};
-      color: ${darkMode ? '#eee' : '#222'};
-      margin-bottom: 6px;
-      padding: 6px;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    `;
-    li.draggable = true;
+  if (!text || typeof text !== 'string' || !text.trim()) return;
 
-    const drag = document.createElement('span');
-    drag.textContent = '☰';
-    drag.style.cssText = 'cursor:move; user-select:none;';
+  const noteText = text.trim();
+  const li = document.createElement('li');
+  li.style.cssText = `
+    background: ${darkMode ? '#333' : '#f9f9f9'};
+    color: ${darkMode ? '#eee' : '#222'};
+    margin-bottom: 6px;
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: visible;
+    font-size:10px;
+  `;
+  li.draggable = true;
 
-    const span = document.createElement('span');
-    span.className = 'note-text';
-    span.textContent = noteText;
-    span.contentEditable = true;
-    span.style.cssText = 'flex:1; outline:none; word-wrap:break-word;';
+  const drag = document.createElement('span');
+  drag.textContent = '☰';
+  drag.style.cssText = 'cursor:move; user-select:none;';
 
-    const del = document.createElement('button');
-    del.textContent = '✖';
-    del.style.cssText = 'background:none; border:none; color:#c00; cursor:pointer; font-size:14px;';
-    
-    // Safe delete handler
-    del.onclick = (e) => {
-      e.stopPropagation();
-      if (li.parentNode) {
-        li.remove();
+  const span = document.createElement('span');
+  span.className = 'note-text';
+  span.textContent = noteText;
+  span.style.cssText = `
+    flex: 1;
+    outline: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+    cursor: pointer;
+  `;
+
+  const del = document.createElement('button');
+  del.textContent = '✖';
+  del.style.cssText = 'background:none; border:none; color:#c00; cursor:pointer; font-size:14px;';
+  del.onclick = (e) => {
+    e.stopPropagation();
+    if (li.parentNode) {
+      li.remove();
+      saveNotes();
+    }
+  };
+
+  // Create floating bubble editor (outside widget)
+  const bubble = document.createElement('div');
+  bubble.contentEditable = true;
+  bubble.textContent = noteText;
+  bubble.style.cssText = `
+    position: fixed;
+    z-index: 9999;
+    background: ${darkMode ? '#444' : '#fff'};
+    color: ${darkMode ? '#eee' : '#222'};
+    border: 1px solid ${darkMode ? '#666' : '#ccc'};
+    padding: 10px;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    width: 250px;
+    max-height: 150px;
+    overflow-y: auto;
+    display: none;
+    font-size: 12px;
+  `;
+  document.body.appendChild(bubble); // append to body so it can overflow widget
+
+  // On span click, show and position bubble
+  span.onclick = (e) => {
+    e.stopPropagation();
+    const rect = span.getBoundingClientRect();
+
+    // Decide left or right based on available space
+    const spaceRight = window.innerWidth - rect.right;
+    const bubbleWidth = 270; // including padding/margin
+
+    if (spaceRight > bubbleWidth) {
+      bubble.style.left = `${rect.right + 8}px`;
+    } else {
+      bubble.style.left = `${rect.left - bubbleWidth - 8}px`;
+    }
+
+    bubble.style.top = `${rect.top}px`;
+    bubble.style.display = 'block';
+    bubble.focus();
+  };
+
+  // Close bubble on outside click & sync content
+  document.addEventListener('click', (e) => {
+    if (bubble.style.display === 'block' &&
+        !bubble.contains(e.target) &&
+        e.target !== span) {
+      bubble.style.display = 'none';
+      const newText = bubble.textContent.trim();
+      if (newText !== span.textContent.trim()) {
+        span.textContent = newText;
         saveNotes();
       }
-    };
+    }
+  });
 
-    // Safe input handler with debouncing
-    let saveTimeout;
-    span.oninput = () => {
-      clearTimeout(saveTimeout);
-      saveTimeout = setTimeout(saveNotes, 300);
-    };
+  li.append(drag, span, del);
+  noteList.appendChild(li);
+  saveNotes();
+}
 
-    li.append(drag, span, del);
-    noteList.appendChild(li);
-    saveNotes();
-  }
+  //Enhanced drag and drop logic with better error handling
+ 
+ 
 
-  // Enhanced drag and drop logic with better error handling
+ 
+ 
+ 
   function handleDragStart(e) {
     if (e.target.closest('li')) {
       dragSrc = e.target.closest('li');
@@ -334,6 +411,7 @@
       const selected = window.getSelection().toString().trim();
       if (selected && selected.length > 0 && selected.length < 1000) {
         addNote(selected);
+        window.getSelection();
         window.getSelection().removeAllRanges();
       }
     }, 100);
@@ -362,10 +440,18 @@
       content.style.display = 'none';
       footer.style.display = 'none';
       controls.style.display = 'none';
-     
-      wrapper.style.height = 'auto';
-      wrapper.style.width = 'auto';
-
+       
+      wrapper.style.height = '40px';
+      wrapper.style.width = '145px';
+      
+      wrapper.style.minHeight = '40px';
+      wrapper.style.minWidth = '145px'; 
+      wrapper.style.maxHeight = '40px';
+      wrapper.style.maxWidth = '145px';
+      
+      
+      
+      
       if (minimizeBtn) minimizeBtn.textContent = '+';
     } else {
       content.style.display = 'block';
@@ -373,6 +459,12 @@
       controls.style.display = 'flex';
       wrapper.style.height = '300px';
       wrapper.style.width='260px';
+      
+      wrapper.style.minHeight = '300px';
+      wrapper.style.minWidth='260px';
+      wrapper.style.maxHeight = '80%';
+      wrapper.style.maxWidth = '80%';
+      
 
       if (minimizeBtn) minimizeBtn.textContent = '−';
     }
@@ -409,7 +501,7 @@
       const notes = Array.from(noteList.children)
         .map(li => {
           const textElement = li.querySelector('.note-text');
-          return textElement ? textElement.textContent.trim() : '';
+          return textElement ? `.${textElement.textContent.trim()}\n\n` : '';
         })
         .filter(note => note !== '')
         .join('\n');
@@ -419,7 +511,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'NoteSnatch_Notes.txt';
+        a.download = 'NoteSnatch_Notes.doc';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
